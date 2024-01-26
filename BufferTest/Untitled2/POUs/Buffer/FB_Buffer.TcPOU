@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="FB_Buffer" Id="{bfe92a21-68c0-4c91-91d9-ceb661de1969}" SpecialFunc="None">
+    <Declaration><![CDATA[(* 
+:Description: This function block allows to log the data to the buffer
+*)
+FUNCTION_BLOCK FB_Buffer
+VAR
+	sName 			: STRING;
+	MAX_BUFFER_SIZE : UDINT;
+	arrBuffer 		: ARRAY[0..MAX_BUFFER_SIZE] OF BYTE; (* Buffer memory used by FB_MemRingBuffer function block *)
+	
+	(* Internal status *)
+	bActive 					: BOOL;						(*  *)
+	bBusy						: BOOL;						(*  *)
+	bError						: BOOL;						(*  *)
+	iErrorID					: UDINT;					(*  *)
+	
+	(* Function blocks - buffer handling *)
+	fbBuffer					: FB_MemRingBuffer;
+	
+	(* State machines *)
+	eBufferState				: E_BufferState;
+	eBufferInitState			: E_BufferInitState;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="FirstCycle" Id="{c0cb9efa-c63a-44dc-aac0-560412c22bee}" />
+    <Folder Name="Properties" Id="{50b54840-c606-4efe-9e99-fcadc7c53e33}" />
+    <Folder Name="Requests" Id="{345e277a-0100-4003-96d4-1fd6f7358b4d}" />
+    <Folder Name="StateMachine" Id="{3c1c347f-176d-491a-9618-1a847225048c}" />
+    <Property Name="Active" Id="{68ee4ceb-b0b5-4544-a166-6f570644d20b}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY Active : REFERENCE TO BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{0b8e58c5-a4de-4dc0-8ec0-fa5cc21507c2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Active REF= bActive;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Busy" Id="{687a8547-e55c-48b7-9f56-e0d843c2f4ce}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY Busy : REFERENCE TO BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{3d982172-8c1a-49f8-b57d-863b054c4964}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Busy REF= bBusy;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Error" Id="{da746dad-1602-4a9e-b81f-03189b4eb9a9}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY Error : REFERENCE TO BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{b05c7773-deaf-4881-a79e-5256802f6113}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Error REF= bError;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="ErrorID" Id="{94845ebf-176e-4701-946b-f3173952c32c}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY ErrorID : REFERENCE TO UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{743f855e-29be-48f6-8f34-ac08caa835e5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ErrorID REF= iErrorID;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="MR_FirstCycle" Id="{4a615ef0-caa0-4488-8eb5-5de764d7cc9d}" FolderPath="FirstCycle\">
+      <Declaration><![CDATA[METHOD MR_FirstCycle : BOOL
+VAR_INPUT
+	sName 			: STRING;
+	MAX_BUFFER_SIZE : UDINT;
+	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.sName := sName;
+THIS^.MAX_BUFFER_SIZE := MAX_BUFFER_SIZE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_Init" Id="{96faae37-bed6-4137-b54a-ac9f4f6e0385}" FolderPath="Requests\">
+      <Declaration><![CDATA[METHOD MR_Init : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF eBufferState = BUFFER_UNINITIALIZED THEN
+	bBusy := TRUE;
+	MR_Init := FALSE;
+	eBufferState := BUFFER_INITIALIZING;
+	
+ELSIF eBufferState := BUFFER_READY THEN
+	bBusy := FALSE;
+	MR_Init := TRUE;
+	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MS_Initializing" Id="{2fa15528-8c84-4c0b-a540-312cad747155}" FolderPath="StateMachine\">
+      <Declaration><![CDATA[METHOD PROTECTED MS_Initializing]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE eBufferInitState OF
+	
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MS_Uninitialized" Id="{6ef825a8-4ef9-465c-a57b-2ecb353a3e15}" FolderPath="StateMachine\">
+      <Declaration><![CDATA[METHOD PROTECTED MS_Uninitialized
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="StateMachine" Id="{0b98d0b0-309d-4e58-bec9-df982c0676a6}" FolderPath="StateMachine\">
+      <Declaration><![CDATA[METHOD PROTECTED StateMachine : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE eBufferState OF
+	BUFFER_UNINITIALIZED:
+		MS_Uninitialized();
+	
+	BUFFER_INITIALIZING:
+		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_Buffer">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.Active.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.Busy.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.Error.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.ErrorID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.MR_FirstCycle">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.MR_Init">
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="6" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.MS_Initializing">
+      <LineId Id="5" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.MS_Uninitialized">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Buffer.StateMachine">
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

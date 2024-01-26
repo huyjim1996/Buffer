@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="MAIN" Id="{9f2409fb-a42a-4972-a244-859032f11be5}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	fbFifo 		: FB_DataSetFifo := ( bOverwrite := TRUE );
+	newEntry	: ST_DataSetEntry;
+	oldEntry	: ST_DataSetEntry;
+	bSuccess	: BOOL;
+	nCount		: UDINT;
+	nLoad		: UDINT;
+
+	bReset 		: BOOL := TRUE;
+	bAdd 		: BOOL := TRUE;
+	bGet		: BOOL := TRUE;
+	bRemove		: BOOL := TRUE;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bReset THEN
+	bReset := FALSE;
+	(* reset fifo (clear all entries) *)
+	fbFifo.A_Reset(	in := newEntry, bOk=>bSuccess, nCount=> nCount, nLoad => nLoad );
+END_IF
+
+IF bAdd THEN
+	bAdd := FALSE;
+
+	(* create new or modify data set entry *)
+	newEntry.bFlag := NOT newEntry.bFlag;
+	newEntry.nValue := newEntry.nValue + 1;
+	newEntry.sMsg := BYTE_TO_STRING(newEntry.nValue);
+
+	(* add new entry to the fifo *)
+	fbFifo.A_Add(	in := newEntry, bOk=>bSuccess, nCount=> nCount, nLoad => nLoad );
+END_IF
+
+IF bGet THEN
+	bGet := FALSE;
+	(* get (but not delete) oldest entry *)
+	fbFifo.A_Get( out => oldEntry, bOk => bSuccess, nCount => nCount, nLoad => nLoad );
+END_IF
+
+IF bRemove THEN
+	bRemove:= FALSE;
+	(* remove oldest entry *)
+	fbFifo.A_Remove( out => oldEntry, bOk => bSuccess, nCount => nCount, nLoad => nLoad );
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="3" Count="28" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

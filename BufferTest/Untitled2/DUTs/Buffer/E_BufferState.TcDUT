@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="E_BufferState" Id="{4c6fe3b1-972e-49c4-94a1-891a2eaa6155}">
+    <Declaration><![CDATA[{attribute 'strict'}
+TYPE E_BufferState :
+(
+	BUFFER_UNINITIALIZED	:= 0,	(* Not ready to work *)
+	BUFFER_INITIALIZING		:= 10,	(* Preparing to work *)
+	BUFFER_READY			:= 20,	(* Ready to work, waiting for logs in buffer *)
+	BUFFER_IDLE				:= 30,	(* Ready to work, waiting for logs in buffer *)
+	BUFFER_ADD				:= 40,	(* Add new data to buffer base on FIFO*)
+	BUFFER_GET				:= 50,	(* Get the oldest data from buffer base on FIFO*)
+	BUFFER_REMOVE			:= 60,	(* Remove the oldest data from buffer base on FIFO*)
+	BUFFER_RESET			:= 70	(* Remove all data of the buffer *)
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

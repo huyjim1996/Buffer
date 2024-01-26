@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="MAIN" Id="{a8180480-cea2-4aed-bdd7-4c396d0f043c}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	fbBufferOK : FB_MemRingBuffer;
+	fbBufferReject : FB_MemRingBuffer;
+	InData : LREAL;
+	arrBuffer 	: ARRAY[0..MAX_BUFFER_SIZE] OF BYTE; (* Buffer memory used by FB_MemRingBuffer function block *)
+	
+	bOk			: BOOL;
+	nCount		: UDINT;
+	nLoad		: UDINT;
+	outData			: LREAL;
+	lastData: LREAL;
+	bAdd: BOOL;
+	bTest : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bAdd THEN
+	fbBufferOK.A_AddTail( pWrite:= ADR( InData ),
+					cbWrite:= SIZEOF( InData ),
+					pBuffer:= ADR( arrBuffer ),
+					cbBuffer:= SIZEOF( arrBuffer ),
+					bOk=> bOk,
+					nCount => nCount );
+
+
+	IF bOk THEN (* overflow ? *)
+		bAdd := FALSE;
+	END_IF
+END_IF
+
+fbBufferOK.A_GetHead( pRead:= ADR( outData ),
+					cbRead:= SIZEOF( outData ),
+					pBuffer:= ADR( arrBuffer ),
+					cbBuffer:= SIZEOF( arrBuffer ),
+					bOk=> bOk,
+					nCount => nCount );
+					
+IF outData = 123 THEN
+	bTest := TRUE;
+	fbBufferOK.A_RemoveHead( 	pRead:= ADR( lastData ),
+						cbRead:= SIZEOF( lastData ),
+						pBuffer:= ADR( arrBuffer ),
+						cbBuffer:= SIZEOF( arrBuffer ),
+						bOk=> bOk,
+						nCount => nCount );
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="2" Count="0" />
+      <LineId Id="11" Count="8" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="34" Count="5" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="40" Count="2" />
+      <LineId Id="45" Count="4" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="43" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
